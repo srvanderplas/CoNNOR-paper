@@ -6,7 +6,7 @@
 
 \documentclass[AMS,STIX1COL]{WileyNJD-v2}
 
-\usepackage{amsmath,amssymb,array,amsfonts}
+\usepackage{amsmath,array,amsfonts}
 \usepackage[english]{babel} % Language hyphenation and typographical rules
 
 % \usepackage[hang, small,labelfont=bf,up,textfont=it,up]{caption} % Custom captions
@@ -93,10 +93,117 @@ knitr::opts_chunk$set(dev=c('postscript', 'png'),
 @
 
 \section{Introduction}
+% Frame the problem - it's hard to identify general concepts like "circle" or "zig-zag" in images, whether you're using old-style methods or newer neural network approaches.
+
+% Talk about the multiple-view one-object problem - this is not just a problem in machine learning, but in life. Our brains solved it, but how?
+
+% Transition into CNNs - structure is similar to the basic understanding of the architecture of the visual cortex, but are CNNs capable of recognizing these generic shapes in very narrow contexts (like footwear patterns)
+
+\subsection{Convolutional Neural Networks for Image Recognition}
+% Provide a brief overview of CNNs for image recognition and how they work
 
 
+% Note that there is rapid development in the field, and innovations like R-CNNs, YOLO, etc. do change the game a little but are still primarily trained for highly specific categories, rather than general concepts.
+
+
+\subsection{Forensic Footwear Analysis}
+% Provide some motivation for the application area - not much data, we can collect data with innovation in machinery, but we still have to be able to automatically *process* that much data, because it's too much to do by hand.
+
+% Emphasize the need to have recognizable categories for examiners' use
+
+\section{Neural Network Model Development}
+% General introduction to the approach
+
+\subsection{Transfer Learning}
+% Describe VGG16 and why transfer learning is the approach we thought was best here
+
+
+\subsection{Initial Data}
+% Explain how the shoe images were obtained and why we're using them instead of waiting for images from the shoe scanner - e.g. proof-of-concept, concern over general feature recognition as a problem, desire to have a model that can then be adapted to fuzzier/messier data by selectively loosening weights without fully retraining...
+
+\subsection{Classification and Labeling}
+% Describe the process of labeling the data, and the specific criteria for each section
+
+The categories we use in this study are operationally defined as follows:
+\begin{description}
+\item [Bowtie] Bowtie shapes are roughly quadrilateral, with two opposite concave faces. The remaining two faces can be convex or straight, and the concave faces may have straight portions, so long as there is a concave region.
+\item [Chevron] Chevron shapes include repeating parallel lines as well as individual ``v" shapes. They may be angular but can also be curved.
+\item [Circle] Circles include ellipses and ovals; they must be round.
+\item [Line] Lines are repeated and parallel; a more general definition of a line would be difficult to differentiate from many other patterns. Lines can be mildly curved.
+\item [Polygon] Polygons are defined in this standard to have more than 4 sides. They include pentagons, hexagons, and octagons.
+\item [Quadrilateral] Quadrilaterals (quads) have four sides. They may have rounded or square corners.
+\item [Star] Stars are any shape with alternating concave and convex regions, or lines which emanate from a central point. ``X" and ``+" shapes are also classified as stars.
+\item [Text] Text is any shape which would be identified as text by a reasonable human. In most cases, the text on the outsole images used is made up of Latin alphabet characters; the model will likely not recognize text in other scripts (but could be trained if non-Latin text images could be obtained).
+\item [Triangle] Triangles are any three-sided figure. Like quadrilaterals, they can have rounded corners. In some cases, it is difficult to distinguish between a trapezoidal shape and a triangle when rounded corners are involved.
+\item [Other] Other features which were marked include logos, various textures (including crepe, stippling, etc.), and smooth regions with no discernible features. These regions are grouped and provide the additional information that none of the previous nine categories are present.
+\end{description}
+
+\begin{center}
+\begin{table}
+\centering
+
+\caption[Geometric elements used to classify tread patterns.]{A set of geometric elements used to classify tread patterns. Categories modified from \cite{grossVariabilitySignificanceClass2013}.}\label{tab:class-char-examples}
+
+\setlength\tabcolsep{1mm}
+\begin{tabular}{rccl}
+Bowtie & \raisebox{-.5\height}{\includegraphics[width=.3\textwidth]{class_examples/bowtie_examples.png}} &
+\raisebox{-.5\height}{\includegraphics[width=.3\textwidth]{class_examples/chevron_examples.png}} & Chevron \vspace{1mm}\\
+Circle & \raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{class_examples/circle_examples.png}} &
+\raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{class_examples/line_examples.png}} & Line  \vspace{1mm}\\
+Polygon & \raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{class_examples/polygon_examples.png}} &
+\raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{class_examples/quad_examples.png}} & Quad  \vspace{1mm}\\
+Star & \raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{class_examples/star_examples.png}} &
+\raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{class_examples/text_examples.png}} & Text  \vspace{1mm}\\
+Triangle & \raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{class_examples/triangle_examples.png}} &
+\raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{class_examples/other_examples.png}} & Other \\
+\end{tabular}
+\end{table}
+\end{center}
+
+\subsection{Training Data} 
+% Describe the training data we used
+
+% Need to make sure training data is properly split up - can't have data from the same image in both the training and test set
+
+\subsection{Model Training}
+% Describe model training process - loss function, gradient settings, learning rate, convergence
+
+% Be sure to describe any diagnostics that show that the model is not overfit
+
+\section{Results}
+
+\subsection{Accuracy}
+% Describe overall accuracy
+
+% Describe class-by-class accuracy
+
+% Show examples of classifications
+
+\subsection{Shape Generalization}
+
+% Show examples of shape confusion - text vs. circle, triangle vs. quad vs. hexagon
+
+% Show confusion matrix
+
+\subsection{Model Diagnostics}
+% Describe diagnostic plots used to "see" what the model sees
+
+\subsubsection{Application: Image Contrast}
+% Describe image contrast adaptation, show diagnostics and improvement
+
+\subsubsection{Feature Overlap}
+% Show examples and talk about how the model is correctly recognizing features, but is not correctly integrating lower-level features into shapes that are meaningful in this context -- like circles vs quadrilaterals
 
 \section{Conclusions}
+
+% Point 1 - the model is very good at picking out appropriate low-level features that may be aggregated into the correct shape, thanks in part to transfer learning from VGG16
+
+% Point 2 - the model is not particularly good at aggregating these lower-level features into higher-level categories that are sufficiently general that they match our labels
+
+% Point 3 - this is a hard problem - use Seychelles image to show that there are multiple curves that would seem to comprise a circle, but because the figure isn't closed, it isn't a circle. 
+
+% Resolution - May want to try other, newer models, but the fundamental problem remains the same - how do we add in sufficient spatial context to be able to appropriately integrate the features? Discuss a few other options...
+
 
 
 %\backmatter
@@ -130,12 +237,12 @@ This work was funded (or partially funded) by the Center for Statistics and Appl
 
 \section*{Author Biography}
 
-\begin{biography}{
+\begin{biography}{%
 % \includegraphics[width=60pt,height=70pt,draft]{empty}
-}{
+}{%
 \textbf{Author Name.} 
 Biography text
-}
+}%
 \end{biography}
 
 \end{document}
