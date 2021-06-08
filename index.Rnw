@@ -1,0 +1,141 @@
+% Author Guidelines for SADM: https://onlinelibrary.wiley.com/page/journal/19321872/homepage/forauthors.html
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[AMS,STIX1COL]{WileyNJD-v2}
+
+\usepackage{amsmath,amssymb,array,amsfonts}
+\usepackage[english]{babel} % Language hyphenation and typographical rules
+
+% \usepackage[hang, small,labelfont=bf,up,textfont=it,up]{caption} % Custom captions
+\usepackage{booktabs} % Horizontal rules in tables
+\usepackage{subfig} % Sub figures
+\usepackage{graphicx} % better graphics
+\graphicspath{{/}{images/}}
+% \usepackage[dvipsnames]{xcolor} % colors
+\PassOptionsToPackage{xcolor}{dvipsnames}
+
+\usepackage{enumitem} % Customized lists
+\setlist[itemize]{noitemsep} % Make itemize lists more compact
+
+\usepackage{hyperref} % For hyperlinks in the PDF
+\usepackage{nameref} % \Cref command automatically handles figure/table/etc refs
+
+
+
+\articletype{Article Type}%
+
+\received{26 April 2016}
+\revised{6 June 2016}
+\accepted{6 June 2016}
+
+\raggedbottom
+
+\begin{document}
+
+%----------------------------------------------------------------------------------------
+%	TITLE/AUTHOR SECTION
+%----------------------------------------------------------------------------------------
+\title{When is a circle not a circle? Conceptual object recognition using neural networks with applications in forensic footwear analysis %\protect\thanks{}
+}
+
+\author[1]{Susan Vanderplas}
+
+\author[2]{Miranda Tilton}
+
+% \author[1]{Jayden Stack}
+
+
+\authormark{Vanderplas \textsc{et al}}
+
+
+\address[1]{\orgdiv{Statistics Department}, \orgname{University of Nebraska - Lincoln}, \orgaddress{\state{Nebraska}, \country{United States}}}
+
+\address[2]{\orgdiv{Statistics Department}, \orgname{Iowa State University}, \orgaddress{\state{Iowa}, \country{United States}}}
+
+\corres{*Miranda Tilton, 
+2438 OSBORN DR, AMES, IA 50011-1090 \email{tiltonm@iastate.edu}}
+
+% \presentaddress{350 Hardin Hall (North Wing), 
+% 3310 Holdrege Street, 
+% University of Nebraska-Lincoln,
+% Lincoln NE 68583-0972}
+
+%----------------------------------------------------------------------------------------
+
+
+%----------------------------------------------------------------------------------------
+%	Front Matter
+%----------------------------------------------------------------------------------------
+\abstract[Summary]{This is sample abstract text.}
+
+\keywords{keyword1, keyword2, keyword3, keyword4}
+
+\jnlcitation{\cname{%
+\author{S. Vanderplas}, 
+\author{M. Tilton}} (\cyear{2022}), 
+\ctitle{When is a circle not a circle? Conceptual object recognition using neural networks with applications in forensic footwear analysis}, \cjournal{Statistical Analysis and Data Mining}, \cvol{2022;00:1--6}.}
+
+\maketitle
+
+\footnotetext{\textbf{Abbreviations:} Convolutional Neural Net (CNN)}
+
+%----------------------------------------------------------------------------------------
+
+<<setup, include = F>>=
+library(knitr)
+library(tidyverse)
+
+knitr::opts_chunk$set(dev=c('postscript', 'png'),
+                      fig.path = "images/")
+@
+
+\section{Introduction}
+
+
+
+\section{Conclusions}
+
+
+%\backmatter
+
+\section*{Acknowledgments}
+This work was funded (or partially funded) by the Center for Statistics and Applications in Forensic Evidence (CSAFE) through Cooperative Agreements 70NANB15H176 and 70NANB20H019 between NIST and Iowa State University, which includes activities carried out at Carnegie Mellon University, Duke University, University of California Irvine, University of Virginia, West Virginia University, University of Pennsylvania, Swarthmore College and University of Nebraska, Lincoln.
+
+\subsection*{Author contributions}
+
+
+\subsection*{Financial disclosure}
+
+% None reported.
+
+\subsection*{Conflict of interest}
+
+% The authors declare no potential conflict of interests.
+
+
+\section*{Supporting information}
+
+% The following supporting information is available as part of the online article:
+
+
+
+\appendix
+
+
+\bibliography{refs}%
+
+
+\section*{Author Biography}
+
+\begin{biography}{
+% \includegraphics[width=60pt,height=70pt,draft]{empty}
+}{
+\textbf{Author Name.} 
+Biography text
+}
+\end{biography}
+
+\end{document}
