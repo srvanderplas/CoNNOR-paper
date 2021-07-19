@@ -85,43 +85,158 @@
 %----------------------------------------------------------------------------------------
 
 <<setup, include = F>>=
-library(knitr)
-library(tidyverse)
+knitr::opts_chunk$set(echo = F, dev = "pdf", dpi = 1000, message = F, warning = F, fig.align = "center", fig.path = "figure/")
+options(kableExtra.latex.load_packages = FALSE)
+library(kableExtra)
+knit_hooks$set(document = function(x) {sub('\\usepackage[]{color}', '\\usepackage[table]{xcolor}', x, fixed = TRUE)})
 
-knitr::opts_chunk$set(dev=c('postscript', 'png'),
-                      fig.path = "images/")
+library(magrittr)
+library(tidyverse)
+library(tidyr)
+nest <- nest_legacy
+unnest <- unnest_legacy
+library(ggplot2)
+library(keras)
+
+mytheme <- theme_bw()
+theme_set(mytheme)
+@
+
+<<results_setup, include = F>>=
+
+# if ("paper" %in% list.files()) {
+#   wd <- file.path(getwd(), "paper")
+# } else {
+#   wd <- getwd()
+# }
+
+wd <- getwd()
+
+codedir <- file.path(wd, "code")
+modeldir <- file.path(wd, "model")
+imgdir <- file.path(wd, "images")
+
+source(file.path(codedir, "Generate_Model_Images.R"))
+source(file.path(codedir, "equalize.R"))
+@
+
+<<labeled-data-setup, include = F>>=
+model_path <- file.path(modeldir, "TrainedModels")
+
+if (grepl("!School", model_path)) {
+  newest_model <- get_newest(dir = model_path, pattern = "weights.h5")
+  newest_model$prefix = "vgg16_onehotaug_9class_256"
+  newest_model$start_date = "2019-05-14_19_45_22"
+} else {
+  newest_model <- list(path = file.path(model_path, "20190514-155453"),
+      base_file = "2019-05-14_19:45:22_vgg16_onehotaug_9class_256-weights.h5",
+      prefix = "vgg16_onehotaug_9class_256", start_date = "2019-05-14_19:45:22",
+      process_dir = "20190514-155453")
+}
+
+newest_data_file <- file.path(modeldir, "RProcessedImages",
+                              newest_model$process_dir, "cropped_photos.Rdata")
+
+load(newest_data_file)
+source(file.path(codedir, "count_images.R"))
+@
+
+<<load-keras-model, include = F, eval = T, echo = F>>=
+model_dir <- newest_model$path
+load(list.files(model_dir, pattern = "-history.Rdata", full.names = T)[1])
+load(file.path(newest_model$path,
+               paste0(newest_model$start_date, "_",
+                      newest_model$prefix, ".Rdata")))
+
+model_wts_file <- file.path(newest_model$path, newest_model$base_file)
+loaded_model <- set_weights(model_wts_file)
 @
 
 \section{Introduction}
+
 % Frame the problem - it's hard to identify general concepts like "circle" or "zig-zag" in images, whether you're using old-style methods or newer neural network approaches.
 
 % Talk about the multiple-view one-object problem - this is not just a problem in machine learning, but in life. Our brains solved it, but how?
 
 % Transition into CNNs - structure is similar to the basic understanding of the architecture of the visual cortex, but are CNNs capable of recognizing these generic shapes in very narrow contexts (like footwear patterns)
 
-\subsection{Convolutional Neural Networks for Image Recognition}
-% Provide a brief overview of CNNs for image recognition and how they work
+% FROM SUSAN'S EMAIL
+%My plan is to scrap the current intro, and frame the problem as one of machine learning models being difficult to apply if they don't produce results that are in the language of the user. So in effect, we need to produce a machine learning model which predicts user-friendly classes -- which is more challenging because those user-friendly classes aren't necessarily precisely defined. This "human friendly machine learning" is something that isn't particularly common.
 
+%This will probably require more explanation of the engineering side of things - to provide useful context - but at the fundamental level this is a machine-learning issue -- it's just practically relevant in forensics because we're trying to use their vocabulary.
+
+% MT: I like the idea of focusing on the human-readability, since that was a huge motivating factor for our classification scheme.
+
+\begin{itemize}
+\item Humans learn that simple shapes (e.g., circle, triangle, zigzag) are the basic components of many complex objects. 
+\item Image recognition has been applied to many complex/specific applications; however, we're missing models that identify the simple components accurately. 
+\item Our motivation is forensic analysis of footwear patterns by human examiners. Footwear patterns are complex; there is value in breaking them into their basic components/shapes (to make a hard whole-shoe problem easier, to be broadly applicable to novel tread patterns, to include look-alikes).
+\item These basic concepts/shapes are still difficult to identify, whether you're using old-style methods or newer neural network approaches.
+\item We want to use CNNs, the current gold standard in image recognition, because they work like our visual cortex (e.g., feature detection) and brains (which essentially learn from labeled examples). 
+\item Thus, the goal of our work is to evaluate how well CNNs identify basic shapes.
+\item Notably, "basic shapes" aren't precisely defined. E.g., quadrilateral can be rhombus or trapezoid. 
+\end{itemize}
+
+
+\subsection{Convolutional Neural Networks for Image Recognition}
+
+% Provide a brief overview of CNNs for image recognition and how they work
 
 % Note that there is rapid development in the field, and innovations like R-CNNs, YOLO, etc. do change the game a little but are still primarily trained for highly specific categories, rather than general concepts.
 
+\begin{itemize}
+\item CNNs detect features (with convolutional filters) and then learn to meaningfully associate features with provided labels (with densely connected layers). This process is analogous to our eyes and brain.
+\item 
+\end{itemize}
+
 
 \subsection{Forensic Footwear Analysis}
+
 % Provide some motivation for the application area - not much data, we can collect data with innovation in machinery, but we still have to be able to automatically *process* that much data, because it's too much to do by hand.
 
 % Emphasize the need to have recognizable categories for examiners' use
 
+\begin{itemize}
+\item Our work is motivated by an application in forensic science.
+\item Examiners receive photographs of an outsole, or outsole impression, and classify RACs or class characteristics; shape categories are often used for the class chars.
+\item We ultimately would like to conduct inference about feature prevalence within a population by collecting a (large) representative sample via sidewalk scanner.
+\item But we need to classify that data automatically since it's too much to do by hand.
+\item We're using recognizable categories for examiners' use, to clarify the "black box" and facilitate understanding and adoption of our method.
+\end{itemize}
+
+
 \section{Neural Network Model Development}
+
 % General introduction to the approach
 
+
 \subsection{Transfer Learning}
+
 % Describe VGG16 and why transfer learning is the approach we thought was best here
+
+\begin{itemize}
+\item Not much data, so we use the pre-trained base and train a new classifier to get decent results from the data we have.
+\item VGG16 is well-established, common, relatively simple
+\item VGG16 is trained on ImageNet, so it has filters trained to detect complex features.
+\end{itemize}
 
 
 \subsection{Initial Data}
+
 % Explain how the shoe images were obtained and why we're using them instead of waiting for images from the shoe scanner - e.g. proof-of-concept, concern over general feature recognition as a problem, desire to have a model that can then be adapted to fuzzier/messier data by selectively loosening weights without fully retraining...
 
+\begin{itemize}
+\item Shoe images were web-scraped. Rather than wait for the scanner, we use "perfect" images to get a proof-of-concept for the geometric classification scheme.
+\item Messy scanner data will introduce even more challenges, and we wanted a chance to evaluate the classification scheme alone before troubleshooting images from a real scanner.
+\item Side note: I'm not sure that the selective loosening of weights idea is possible and/or worth it, in a practical sense.
+\end{itemize}
+
+Our outsole images were obtained from online shoe retail sites. \textcolor{red}{From first SADM submission:} A reasonable critique of this approach is that images collected from online retailers are of much higher quality than would be expected from the sidewalk scanner proposed in \autoref{sec:Introduction}, and thus the CNN described in this paper is not immediately ready to process real degraded images. This consideration is justified, as machine learning methods tend to perform poorly when applied to test data that do not resemble the training data. [However, the use of CNNs to predict class characteristics using the same categories used by human examiners is novel and introduces some interesting complications.] As a full-featured automatic scanner is still under development, obtaining representative degraded images is not possible (because the scanner's optics are still in flux). The goal of this work is to evaluate the proposed classification scheme and determine whether CNNs can sufficiently distinguish class characteristic features found on outsoles. Addressing these questions with clean retailer images provides justification for additional algorithm development as well as continuing investment in optimization of the scanner design.
+
 \subsection{Classification and Labeling}
+
+\textcolor{red}{From first SADM submission:} Existing research indicates that a sufficiently well-defined set of features can be used to separate shoes into make and model categories \citep{grossVariabilitySignificanceClass2013}; the set of features used in that study included circle/oval, crepe, herringbone, hexagon, parallel lines, logo/lettering/numbering, perimeter lugs, star, and other. After consulting with practitioners, we developed a set of categories suitable for automatic recognition by convolutional neural networks. These modifications were necessary because some of the definitions used in Gross et al. (2013) require contextual spatial information which is not preserved during labeling (for example, lugs are required to be on the perimeter of the shoe). \autoref{tab:class-char-examples} shows three examples of each class in the modified feature set.
+
 % Describe the process of labeling the data, and the specific criteria for each section
 
 The categories we use in this study are operationally defined as follows:
@@ -160,12 +275,60 @@ Triangle & \raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{class_exa
 \end{table}
 \end{center}
 
-\subsection{Training Data} 
+\textcolor{red}{From first SADM submission:} Thousands of outsole images were obtained from online shoe retail sites and annotated using LabelMe. Shown in \autoref{fig:labelme}, LabelMe is a tool for image annotation in computer vision problems \citep{labelme}. After annotation, the minimum bounding rectangle of the region is identified and the image is cropped to that area; subsequently, the cropped image is scaled to 256 x 256 pixels. During this process, aspect ratio is not preserved, though efforts are made to label regions which are relatively square to minimize the effect of this distortion. To date, \Sexpr{unique(ann_df$base_image) %>% length()} shoes have been labeled, yielding \Sexpr{nrow(dfunion)} multi-label images.
+
+\begin{figure}[hbt]
+\centering
+\includegraphics[width=.9\textwidth]{images/LabelMe2.png}
+\caption{An example of labeling images with LabelMe}\label{fig:labelme}
+\end{figure}
+
+<<class-characteristic-barchart, fig.width = 6, fig.height = 4, dpi = 300, out.width = "80%", fig.cap = "Distribution of classes in all labeled images. Quadrilaterals, lines, circles, text, and chevrons are relatively common; stars, polygons, and bowties are relatively rare.", fig.scap = "Distribution of classes in all labeled images.">>=
+annotated_imgs %>%
+  mutate(label_type = str_replace(label_type, "multi", "multiple")) %>%
+  mutate(labels = str_to_title(labels)) %>%
+  mutate(labels = factor(labels, levels = c("Quad", "Line", "Text", "Circle",
+                                            "Chevron", "Triangle", "Polygon",
+                                            "Star", "Bowtie", "Other"))) %>%
+  ggplot() +
+  geom_bar(aes(x = labels, fill = label_type), color = "black") +
+  scale_fill_manual("Labels", values = c("single" = "#6ba2b9",
+                                         "multiple" = "#2e5597")) +
+  coord_flip() +
+  ylab("# Labeled Images") +
+  xlab("")  +
+  ggtitle("Current Class Distribution (All Labeled Images)") +
+  mytheme +
+  theme(legend.position = c(1, 1),
+        legend.justification = c(1.03, 1.03),
+        legend.background = element_rect(fill = "white"))
+@
+
+Transfer learning reduces the amount of data required to train a CNN by several orders of magnitude, but labeled images are still difficult to generate on a large scale. Thus, to make the most efficient use of the existing labeled data, we enlarge the training data using a process called image augmentation \citep{krizhevskyImageNetClassificationDeep2012}. Augmentation is the transformation of original input data using image operations such as cropping, zoom, skew, rotation, and color balance modification in order to distort or alter the image while maintaining the essential features corresponding to the label. This process reduces the potential for overfitting the model to the specific set of image data used during the training process, and also increases the amount of data available for training. Examples of pre- and post-augmentation images are shown in \autoref{fig:augmented}.
+
+\begin{figure}
+\centering
+\includegraphics[width=.1\textwidth]{images/augmentation/bowtie_orig.jpg}\hfill
+\includegraphics[width=.1\textwidth]{images/augmentation/aug_bowtie.jpg}\hfill\hfill\hfill
+\includegraphics[width=.1\textwidth]{images/augmentation/quad-2_orig.jpg}\hfill
+\includegraphics[width=.1\textwidth]{images/augmentation/aug_quad-2.jpg}\hfill\hfill\hfill
+\includegraphics[width=.1\textwidth]{images/augmentation/quad_orig.jpg}\hfill
+\includegraphics[width=.1\textwidth]{images/augmentation/aug_quad.jpg}\hfill\hfill\hfill
+\includegraphics[width=.1\textwidth]{images/augmentation/text_orig.jpg}\hfill
+\includegraphics[width=.1\textwidth]{images/augmentation/aug_text.jpg}
+\caption[Original and augmented images.]{Four sets of original (left) and augmented (right) labeled images.}\label{fig:augmented}
+\end{figure}
+
+The \Sexpr{nrow(dfunion)} images were split such that 60\% were used for training. Since the categories do not exist in equal proportion in the labeled data, the training data were weighted by proportion during the training process to ensure that the model can identify both rare and common geometric shapes. Of the remaining 40\% of data, half were used for validation, to monitor the training process, and the remaining data were for testing the performance of the final model. [Need to make sure training data is properly split up - can't have data from the same image in both the training and test set]
+
+% \subsection{Training Data} % MT: combined this with the previous section
 % Describe the training data we used
 
 % Need to make sure training data is properly split up - can't have data from the same image in both the training and test set
 
+
 \subsection{Model Training}
+
 % Describe model training process - loss function, gradient settings, learning rate, convergence
 
 % Be sure to describe any diagnostics that show that the model is not overfit
